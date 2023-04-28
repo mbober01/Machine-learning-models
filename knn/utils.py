@@ -14,6 +14,13 @@ class Utils:
         return df
 
     @staticmethod
+    def standardize(df):
+        for name in df.columns[:-1]:
+            if np.issubdtype(df[name].dtype, np.number):
+                df[name] = (df[name] - df[name].mean())/df[name].std()
+        return df
+
+    @staticmethod
     def split(df, size):
         train_size = int(size * len(df))
         train_df = df.iloc[:train_size]
@@ -21,17 +28,12 @@ class Utils:
         return train_df, test_df
 
     @staticmethod
-    def shuffle(df):
-        dl = df.values.tolist()
-        length = len(dl)
-        for x in range(length):
-            try:
-                i = random.randint(0, length-x)
-                dl[i], dl[-1-x] = dl[-1-x], dl[i]
-            except:
-                pass
-        new_df = pd.DataFrame(data=dl, columns=df.columns)
-        return new_df
+    def shuffle(data):
+        length = len(data)
+        for x in range(1,length):
+            i = random.randint(0, length-x)
+            data.iloc[i], data.iloc[-1-x] = data.iloc[-1-x], data.iloc[i]
+        return data
 
     @staticmethod
     def distance(x, y, m=1):
@@ -40,3 +42,6 @@ class Utils:
 
 
 
+
+
+#%%

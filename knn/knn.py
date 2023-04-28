@@ -1,31 +1,42 @@
-from utils import Utils, np, pd
-from collections import Counter
-
-
+from utils import Utils, np, pd,Counter
 class Knn:
-    def __init__(self, train, test, labels, check, k=3, m=1):
-        self.train = train
-        self.test = test
-        self.labels = labels
-        self.check = check
+    def __init__(self, k=3, m=1):
         self.k = k
         self.m = m
+        self.y = None
+        self.X_train = None
+        self.y_train = None
+        self.cols = None
+        self.train = None
 
-    def train_model(self):
-        types_list = []
-        for record in self.test[self.labels].to_numpy():
+    def fit(self, train,y=None):
+        if y:
+            self.y = y
+        else:
+            self.y = train.columns[-1]
+        self.X_train = train.drop(self.y,axis=1)
+        self.y_train = train[self.y]
+        self.train = train
+
+    def predict(self, test):
+        X_test = test.drop(self.y, axis=1)
+        predictions = []
+        for record in X_test.to_numpy():
             dist = []
-            for train_record in self.train[self.labels].to_numpy():
-                dist.append(Utils.distance(record, train_record, self.m))
+            for train_record in self.X_train.to_numpy():
+                dist.append(Utils.distance(record,train_record,self.m))
             args = np.argsort(dist)
-            variety = Counter(self.train.iloc[args[:self.k]]['variety']).most_common(1)[0][0]
-            types_list.append(variety)
-        return types_list
+            variety = Counter(self.y_train.iloc[args[:self.k]]).most_common(1)[0][0]
+            predictions.append(variety)
+        return predictions
 
-    def check_model(self, trained):
-        percentage = 0
-        for x, y in zip(trained, self.test[self.check]):
+    def accuracy(self, test, pred):
+        test = test[self.y]
+        accuracy = 0
+        for x, y in zip(test, pred):
             if x == y:
-                percentage += 1
-        percentage /= len(trained)
-        return percentage * 100
+                accuracy += 1
+        accuracy /= len(pred)
+        accuracy *= 100
+        return accuracy
+#%%
